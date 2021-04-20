@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="net.thumbtack.school.database.mybatis.mappers.SchoolMapper">
+
+    <resultMap id="resultSchool" type="net.thumbtack.school.database.model.School">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="year" column="year"/>
+
+            <collection property="groups" column="id" javaType="java.util.List"
+                    ofType="net.thumbtack.school.database.model.Group">
+            <result property="id" column="groupid"/>
+            <result property="name" column="groupname"/>
+            <result property="room" column="room"/>
+
+            <collection property="trainees" column="groupid" javaType="java.util.List"
+                        ofType="net.thumbtack.school.database.model.Trainee">
+                <result property="id" column="traineeid"/>
+                <result property="firstName" column="firstName"/>
+                <result property="lastName" column="lastName"/>
+                <result property="rating" column="rating"/>
+            </collection>
+
+            <collection property="subjects" column="groupid" javaType="java.util.List"
+                        ofType="net.thumbtack.school.database.model.Subject">
+                <result property="id" column="subjectid"/>
+                <result property="name" column="subjectname"/>
+            </collection>
+
+        </collection>
+    </resultMap>
+
+    <select id="getAllUsingJoin" resultMap="resultSchool">
+        SELECT `school`.id,
+               `school`.name,
+               `school`.year,
+               `group`.id     as groupid,
+               `group`.name   as groupname,
+               `group`.room,
+               `trainee`.id as traineeid,
+               `trainee`.firstName,
+               `trainee`.lastName,
+               `trainee`.rating,
+               `subject`.id   as subjectid,
+               `subject`.name as subjectname
+        FROM school
+                 JOIN `group` ON `group`.school_id = `school`.id
+                 LEFT JOIN `trainee` ON `trainee`.group_id = `group`.id
+                 JOIN `subject`
+        WHERE `subject`.id IN (SELECT subject_id from `subject_group` WHERE `subject_group`.group_id = `group`.id)
+    </select>
+
+
+</mapper>
